@@ -1,145 +1,137 @@
-//ProfileLogin.dart
+//profilelogin.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'companyprofilelog.dart';
+import 'homelog.dart';
 
-// Halaman Profile dengan informasi pengguna
 class ProfileLogin extends StatefulWidget {
   @override
-  _ProfilePageState createState() => _ProfilePageState();
+  _ProfileLoginState createState() => _ProfileLoginState();
 }
 
-class _ProfilePageState extends State<ProfileLogin> {
-  String name = 'whitney';
-  String email = 'whitney@gmail.com';
-  String phone = '123';
+class _ProfileLoginState extends State<ProfileLogin> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Map<String, dynamic>? userProfile;
+  int _selectedIndex = 0; // Initialize selected index
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  void _fetchUserProfile() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      String email = user.email ?? "";
+      if (email.isNotEmpty) {
+        try {
+          QuerySnapshot querySnapshot = await _firestore
+              .collection('users')
+              .where('email', isEqualTo: email)
+              .get();
+
+          if (querySnapshot.docs.isNotEmpty) {
+            var userDoc = querySnapshot.docs.first.data() as Map<String, dynamic>;
+            setState(() {
+              userProfile = userDoc;
+            });
+          } else {
+            print('Pengguna tidak ditemukan');
+          }
+        } catch (error) {
+          print('Terjadi kesalahan saat mengambil data: $error');
+        }
+      } else {
+        print('Email pengguna tidak tersedia');
+      }
+    } else {
+      print('Pengguna tidak ditemukan');
+    }
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index; // Change selected index
+    });
+    // Navigate to selected page based on index
+    if (index == 2) { // Changed from index == 2 to index == 0
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => CompanyProfileLog()));
+    } else if (index == 1) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeLog()));
+    } else if (index == 2) { // This was correct
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileLogin()));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF00148D), // Warna biru tua yang konsisten
-        toolbarHeight: 80.0,
-        title: Stack(
-          children: [
-            Center( // Menempatkan logo di tengah
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 10.0),
-                child: Image.asset(
-                  'img/logo.jpg', // Path ke logo
-                  height: 50, // Sesuaikan ukuran logo
-                ),
-              ),
-            ),
-          ],
-        ),
+        title: Text('Profil Saya', style: TextStyle(color: Colors.white)),
+        backgroundColor: Color(0xFF121481),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Judul halaman dengan gaya yang lebih dekoratif
-            Center(
-              child: Text(
-                'My Profile',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00148D), // Warna biru tua untuk judul
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            _buildProfileRow('Name:', name),
-            SizedBox(height: 10),
-            _buildProfileRow('Email:', email),
-            SizedBox(height: 10),
-            _buildProfileRow('Phone:', phone),
-            SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  _showEditDialog();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFEAE3), // Tombol dengan warna biru tua
-                ),
-                child: Text('Edit'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Membuat widget untuk menampilkan informasi profil
-  Widget _buildProfileRow(String label, String value) {
-    return Row(
-      children: [
-        Text(
-          '$label ',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(fontSize: 18),
-            textAlign: TextAlign.left,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Dialog untuk mengedit informasi profil
-  void _showEditDialog() {
-    final TextEditingController nameController = TextEditingController(text: name);
-    final TextEditingController emailController = TextEditingController(text: email);
-    final TextEditingController phoneController = TextEditingController(text: phone);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Edit Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
+      body: userProfile == null
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Name'),
+              // Profile Picture can be added here
+
+              // Email Card
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 5,
+                child: ListTile(
+                  leading: Icon(Icons.email, color: Color(0xFF121481)),
+                  title: Text('Email', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(userProfile!['email'] ?? 'Tidak ada email'),
+                ),
               ),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(labelText: 'Email'),
+              SizedBox(height: 20),
+
+              // Username Card
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 5,
+                child: ListTile(
+                  leading: Icon(Icons.person, color: Color(0xFF121481)),
+                  title: Text('Username', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(userProfile!['username'] ?? 'Tidak ada username'),
+                ),
               ),
-              TextField(
-                controller: phoneController,
-                decoration: InputDecoration(labelText: 'Phone'),
+              SizedBox(height: 20),
+
+              // Telephone Card
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 5,
+                child: ListTile(
+                  leading: Icon(Icons.phone, color: Color(0xFF121481)),
+                  title: Text('Telepon', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(userProfile!['telephone'] ?? 'Tidak ada telepon'),
+                ),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  name = nameController.text;
-                  email = emailController.text;
-                  phone = phoneController.text;
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text('Save'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-          ],
-        );
-      },
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.business), label: "Company"),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }

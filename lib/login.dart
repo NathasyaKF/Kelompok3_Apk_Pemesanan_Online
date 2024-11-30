@@ -160,7 +160,6 @@ class _SalonLoginPageState extends State<SalonLoginPage> {
                     );
                     return; // Exit early to prevent further execution
                   }
-
                   try {
                     // Call the login method
                     final user = await _login();

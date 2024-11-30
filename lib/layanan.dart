@@ -6,6 +6,11 @@ import 'haircut.dart';
 import 'body_spa_page.dart';
 import 'coloring.dart';
 import 'creambath.dart';
+import 'premiumbun.dart';
+import 'diamondbun.dart';
+import 'bronzebun.dart';
+
+
 
 void main() {
   runApp(SalonServicePage());
@@ -99,7 +104,7 @@ class _SalonServicePageState extends State<SalonServicePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildServiceButton("Nails", Icons.brush, context),
-                        _buildServiceButton("Makeup", Icons.brush, context),
+                        _buildServiceButton("Makeup", Icons.palette, context),
                         _buildServiceButton("Coloring", Icons.local_fire_department, context),
                       ],
                     ),
@@ -117,9 +122,9 @@ class _SalonServicePageState extends State<SalonServicePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildPromoColumn('img/gold.png', 'Premium Bundling'),
-                        _buildPromoColumn('img/silver.png', 'Diamond Bundling'),
-                        _buildPromoColumn('img/bronze.png', 'Bronze Bundling'),
+                        _buildPromoColumnButton('img/gold.png', 'Premium Bundling'),
+                        _buildPromoColumnButton('img/silver.png', 'Diamond Bundling'),
+                        _buildPromoColumnButton('img/bronze.png', 'Bronze Bundling'),
                       ],
                     ),
                   ],
@@ -213,33 +218,67 @@ class _SalonServicePageState extends State<SalonServicePage> {
   }
 
   // Fungsi untuk membangun gambar promo dan teks
-  Widget _buildPromoColumn(String imagePath, String label) {
-    return Column(
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(imagePath),
-              fit: BoxFit.cover,
-            ),
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 5,
-                offset: Offset(0, 3),
+  // Fungsi untuk membangun gambar promo dan teks
+  Widget _buildPromoColumnButton(String imagePath, String label) {
+    return GestureDetector(
+      onTap: () {
+        // Navigasi berdasarkan label
+        if (label == 'Premium Bundling') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PremiumPage(onAddToCart: (item) {
+              setState(() {
+                cartItems.add(item); // Menambahkan item ke keranjang
+              });
+            })),
+          );
+        } else if (label == 'Diamond Bundling') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => DiamondPage(onAddToCart: (item) {
+              setState(() {
+                cartItems.add(item); // Menambahkan item ke keranjang
+              });
+            })),
+          );
+        } else if (label == 'Bronze Bundling') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => BronzePage(onAddToCart: (item) {
+              setState(() {
+                cartItems.add(item); // Menambahkan item ke keranjang
+              });
+            })),
+          );
+        }
+      },
+      child: Column(
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(imagePath),
+                fit: BoxFit.cover,
               ),
-            ],
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 5,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
           ),
-        ),
-        SizedBox(height: 5),
-        Text(
-          label,
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-      ],
+          SizedBox(height: 5),
+          Text(
+            label,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 

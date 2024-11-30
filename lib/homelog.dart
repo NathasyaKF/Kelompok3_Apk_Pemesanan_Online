@@ -1,9 +1,11 @@
+//homelog.dart
 import 'package:bibimysalon_klmpk6/profilelogin.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'companyprofile.dart'; // Import CompanyProfile page
+import 'companyprofilelog.dart'; // Import CompanyProfile page
 import 'layanan.dart';
+
 
 class HomeLog extends StatefulWidget {
   const HomeLog({super.key});
@@ -17,34 +19,38 @@ class _HomeLogState extends State<HomeLog> {
   String username = ""; // Variable to hold the username
   bool isLoading = true; // Loading state
 
-  Future<void> fetchUsername() async {
-    User? user = FirebaseAuth.instance.currentUser; // Get current user
+  void _fetchUserProfile() async {
+    User? user = FirebaseAuth.instance.currentUser; // Ensure FirebaseAuth instance is used
     if (user != null) {
-      try {
-        DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-        if (doc.exists) {
-          setState(() {
-            username = doc['username']; // Assuming 'username' is the field in Firestore
-            isLoading = false; // Set loading to false after fetching
-          });
-        } else {
-          setState(() {
-            username = "User not found"; // Handle case where user does not exist in Firestore
-            isLoading = false;
-          });
+      String email = user.email ?? "";
+      if (email.isNotEmpty) {
+        try {
+          QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+              .collection('users')
+              .where('email', isEqualTo: email)
+              .get();
+          if (querySnapshot.docs.isNotEmpty) {
+            var userDoc = querySnapshot.docs.first.data() as Map<String, dynamic>;
+            setState(() {
+              username = userDoc['username']; // Assuming 'username' is the field name in Firestore
+              isLoading = false; // Set loading to false after fetching data
+            });
+          } else {
+            print('User not found');
+          }
+        } catch (error) {
+          print('Error fetching data: $error');
         }
-      } catch (e) {
-        setState(() {
-          username = "Error fetching username"; // Handle any errors
-          isLoading = false;
-        });
+      } else {
+        print('User not found');
       }
-    } else {
-      setState(() {
-        username = "Not logged in"; // Handle case where no user is logged in
-        isLoading = false;
-      });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile(); // Call function to fetch username
   }
 
   final List<Map<String, String>> bannerData = [
@@ -65,18 +71,13 @@ class _HomeLogState extends State<HomeLog> {
       _selectedIndex = index; // Change selected index
       // Navigate to selected page
       if (index == 0) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => CompanyProfile()));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CompanyProfileLog()));
       } else if (index == 2) {
         Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileLogin()));
       }
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchUsername(); // Call function to fetch username
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,25 +194,18 @@ class _HomeLogState extends State<HomeLog> {
                         const SizedBox(width: 10),
                         Expanded(
                           child:
-                          Column(crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                            mainAxisAlignment:
-                            MainAxisAlignment.center,
-                            children:
-                            [
-                              Text(bannerData[index]['title']!,
-                                style:
-                                const TextStyle(fontSize:
-                                20, color:
-                                Colors.black),),
-                              const SizedBox(height:
-                              5),
-                              Text(bannerData[index]['description']!,
-                                style:
-                                const TextStyle(fontSize:
-                                14, color:
-                                Colors.black),),
-                            ],
+                          Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children:[
+                            Text(bannerData[index]['title']!, style:
+                            const TextStyle(fontSize:
+                            20, color:
+                            Colors.black),),
+                            const SizedBox(height:
+                            5),
+                            Text(bannerData[index]['description']!, style:
+                            const TextStyle(fontSize:
+                            14, color:
+                            Colors.black),),
+                          ],
                           ),
                         ),
                       ],
@@ -225,10 +219,12 @@ class _HomeLogState extends State<HomeLog> {
       ),
       bottomNavigationBar:
       BottomNavigationBar(
+        type:
+        BottomNavigationBarType.fixed,
         items:
         const [
           BottomNavigationBarItem(icon:
-          Icon(Icons.input), label:
+          Icon(Icons.business), label:
           "Company"),
           BottomNavigationBarItem(icon:
           Icon(Icons.home), label:
@@ -245,3 +241,4 @@ class _HomeLogState extends State<HomeLog> {
     );
   }
 }
+
