@@ -62,9 +62,9 @@ class _MyAppState extends State<MyApp> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.input), label: "Company"),
+            BottomNavigationBarItem(icon: Icon(Icons.business), label: "Company"),
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(icon: Icon(Icons.output), label: "Profile"),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
           ],
           currentIndex: _selectIndex,
           onTap: _onItemTapped,

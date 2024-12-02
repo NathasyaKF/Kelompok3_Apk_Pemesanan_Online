@@ -15,7 +15,7 @@ class _ProfileLoginState extends State<ProfileLogin> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Map<String, dynamic>? userProfile;
-  int _selectedIndex = 0; // Initialize selected index
+  int _selectedIndex = 2; // Initialize selected index
 
   @override
   void initState() {
